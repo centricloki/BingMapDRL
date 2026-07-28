@@ -7334,6 +7334,39 @@ namespace DRLMobile.Core.Services
                     {
                         customerMaster.LastCallActivityDate = lastCallDateTime;
                     }
+                    else if (!string.IsNullOrWhiteSpace(customerMaster.CustomerNumber)
+                       && customerMaster.CustomerNumber.ToLower().StartsWith("x"))
+                    {
+                        /*** JIRA Ticket https://republicbrands.atlassian.net/browse/HS2-57
+                         * Update Last call date on Customer List
+                         * Car Stock Order
+                         */
+                        switch (activityType)
+                        {
+                            case "Car Stock Order":
+                                customerMaster.LastCallActivityDate = lastCallDateTime;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    else if (customerMaster.AccountType != 1)
+                    {
+                        /*** JIRA Ticket https://republicbrands.atlassian.net/browse/HS2-57
+                         * Update Last call date on Customer List
+                         * Indirect Stores:Cash Sale,Cash Sales Initiative
+                         */
+                        switch (activityType)
+                        {
+                            case "Cash Sale":
+                            case "Cash Sales Initiative":
+                                customerMaster.LastCallActivityDate = lastCallDateTime;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
                     customerMaster.IsExported = 0;
                     customerMaster.UpdatedDate = DateTimeHelper.ConvertToDbInsertDateTimeFormat(DateTime.Now);
                     await db.UpdateAsync(customerMaster).ConfigureAwait(false);
@@ -9185,6 +9218,21 @@ namespace DRLMobile.Core.Services
             catch (Exception ex)
             {
                 ErrorLogger.WriteToErrorLog(nameof(DatabaseService), "GetUserFullNameAsync", ex.Message);
+            }
+            return null;
+        }
+
+        public async Task<CustomerMaster> GetCustomerMasterByDeviceIdAsync(string deviceId)
+        {
+            SQLiteAsyncConnection db = new SQLiteAsyncConnection(ApplicationConstants.DATABASE_PATH, false);
+            try
+            {
+                string queryString = $"SELECT * FROM CustomerMaster WHERE DeviceCustomerID = '{deviceId}'";
+                return await db.FindWithQueryAsync<CustomerMaster>(queryString).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                ErrorLogger.WriteToErrorLog(nameof(DatabaseService), "GetCustomerMasterByDeviceIdAsync", ex.Message);
             }
             return null;
         }

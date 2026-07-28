@@ -5475,5 +5475,7 @@ namespace DRLMobile.Core.Services
             }
             return loggedInUserOldTerritories;
         }
+
+        public async Task<CustomerMaster> GetCustomerMasterByDeviceIdAsync(string deviceId) => await DbService.GetCustomerMasterByDeviceIdAsync(deviceId);
     }
 }

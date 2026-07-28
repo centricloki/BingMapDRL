@@ -360,6 +360,8 @@ namespace DRLMobile.Core.Interface
         Task<BDMaster> GetBDMasterByIdAsync(int id);
         Task<int> GetRoleIdAsync(string roleName);
         Task<string> GetUserFullNameAsync(string defTerritoryId);
+        Task<CustomerMaster> GetCustomerMasterByDeviceIdAsync(string deviceId);
+
         #endregion
 
     }
