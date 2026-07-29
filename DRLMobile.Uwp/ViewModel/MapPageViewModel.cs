@@ -1,4 +1,4 @@
-﻿using DevExpress.Mvvm.Native;
+using DevExpress.Mvvm.Native;
 using Microsoft.Toolkit.Mvvm.Input;
 
 using DRLMobile.Core.Enums;
@@ -1318,6 +1318,30 @@ namespace DRLMobile.Uwp.ViewModel
 
                     //AccountClassificationsList = classifications?.Values.ToList();
                     MapsStaticDataSourceHelper.ClassificationsList = classifications?.Values.ToList();
+
+                    // Pre-warm: assign golden-angle colors to any new/unknown classification IDs
+                    // and generate their map-pin PNGs into local storage so that
+                    // LoopAndAddToSourceTradeTypeAsync can use the URIs immediately.
+                    if (MapsStaticDataSourceHelper.ClassificationsList?.Count > 0)
+                    {
+                        // Fire-and-forget — awaited via Task.Run to not block the UI thread.
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await ClassificationColorService.PrewarmAsync(
+                                    MapsStaticDataSourceHelper.ClassificationsList);
+                            }
+                            catch (Exception prewarmEx)
+                            {
+                                ErrorLogger.WriteToErrorLog(
+                                    nameof(MapPageViewModel),
+                                    "ClassificationColorService.PrewarmAsync",
+                                    prewarmEx.StackTrace);
+                            }
+                        });
+                    }
+
                     SetLegendsSource();
                 }
                 //
